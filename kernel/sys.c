@@ -2439,7 +2439,7 @@ SYSCALL_DEFINE1(iotest, int, bufsize)
 {
 	unsigned int write_bytes = 100 * 1024 * 1024; //100 * kb * mb
 	unsigned int buffer_size = bufsize; //from args
-	if (!buffer_size | buffer_size>4*1024) buffer_size = 4*1024;
+	if (!buffer_size || (buffer_size>4*1024)) buffer_size = 4*1024;
 
 	//Avoid using asm here. Dont think thatl work.
 	unsigned int descriptor = sys_open("out", O_WRONLY | O_CREAT, 666);

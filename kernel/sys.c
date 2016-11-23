@@ -52,6 +52,7 @@
 #include <linux/rcupdate.h>
 #include <linux/uidgid.h>
 #include <linux/cred.h>
+#include <linux/fcntl.h>
 
 #include <linux/kmsg_dump.h>
 /* Move somewhere else to avoid recompiling? */
@@ -2433,3 +2434,29 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
 	return 0;
 }
 #endif /* CONFIG_COMPAT */
+
+SYSCALL_DEFINE1(iotest, int, bufsize)
+{
+	unsigned int write_bytes = 100 * 1024 * 1024; //100 * kb * mb
+	unsigned int buffer_size = bufsize; //from args
+	if (!buffer_size | buffer_size>4*1024) buffer_size = 4*1024;
+
+	//Avoid using asm here. Dont think thatl work.
+	unsigned int descriptor = sys_open("out", O_WRONLY | O_CREAT, 666);
+	unsigned int iterations = write_bytes / buffer_size;
+	unsigned int remainingBytes = write_bytes % buffer_size;
+	unsigned int i;
+	char data[buffer_size];
+
+	for (i = 0; i < buffer_size; ++i) data[i] = '0';
+	for (i = 0; i < iterations; i++) sys_write(descriptor, data, buffer_size);
+
+	if (remainingBytes){
+		char data_remainder[remainingBytes];
+		for (i = 0; i < remainingBytes; i++) data_remainder[i] = 'r';
+		sys_write(descriptor, data_remainder, remainingBytes);
+	}
+
+	printk(KERN_INFO "iotest syscall called, buffer: \"%s\"\n", buffer_size);
+	return sys_close(descriptor);
+}

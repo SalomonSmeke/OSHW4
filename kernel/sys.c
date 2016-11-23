@@ -2457,6 +2457,6 @@ SYSCALL_DEFINE1(iotest, int, bufsize)
 		sys_write(descriptor, data_remainder, remainingBytes);
 	}
 
-	printk(KERN_INFO "iotest syscall called, buffer: \"%s\"\n", buffer_size);
+	printk(KERN_INFO "iotest syscall called, buffer: \"%d\"\n", buffer_size);
 	return sys_close(descriptor);
 }
